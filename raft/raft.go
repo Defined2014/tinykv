@@ -169,7 +169,6 @@ func newRaft(c *Config) *Raft {
 	if err := c.validate(); err != nil {
 		panic(err.Error())
 	}
-	// Your Code Here (2A).
 	r := &Raft{
 		id:               c.ID,
 		Prs:              make(map[uint64]*Progress),
@@ -204,7 +203,6 @@ func (r *Raft) sendAppend(to uint64) bool {
 
 // sendHeartbeat sends a heartbeat RPC to the given peer.
 func (r *Raft) sendHeartbeat(to uint64) {
-	// Your Code Here (2A).
 	commit := min(r.RaftLog.committed, r.Prs[to].Match)
 	pbMsg := pb.Message{
 		MsgType: pb.MessageType_MsgHeartbeat,
@@ -218,7 +216,6 @@ func (r *Raft) sendHeartbeat(to uint64) {
 
 // tick advances the internal logical clock by a single tick.
 func (r *Raft) tick() {
-	// Your Code Here (2A).
 	if r.State == StateLeader {
 		r.heartbeatElapsed++
 		if r.heartbeatElapsed >= r.heartbeatTimeout {
@@ -236,7 +233,6 @@ func (r *Raft) tick() {
 
 // becomeFollower transform this peer's state to Follower
 func (r *Raft) becomeFollower(term uint64, lead uint64) {
-	// Your Code Here (2A).
 	r.State = StateFollower
 	r.Term = term
 	r.Lead = lead
@@ -245,7 +241,6 @@ func (r *Raft) becomeFollower(term uint64, lead uint64) {
 
 // becomeCandidate transform this peer's state to candidate
 func (r *Raft) becomeCandidate() {
-	// Your Code Here (2A).
 	r.State = StateCandidate
 	r.Lead = None
 	r.Term++
@@ -288,7 +283,6 @@ func (r *Raft) doElection() {
 
 // becomeLeader transform this peer's state to leader
 func (r *Raft) becomeLeader() {
-	// Your Code Here (2A).
 	// NOTE: Leader should propose a noop entry on its term
 	r.State = StateLeader
 	r.Lead = r.id
@@ -305,7 +299,6 @@ func (r *Raft) becomeLeader() {
 // Step the entrance of handle message, see `MessageType`
 // on `eraftpb.proto` for what msgs should be handled
 func (r *Raft) Step(m pb.Message) error {
-	// Your Code Here (2A).
 	if m.Term > r.Term {
 		if m.MsgType == pb.MessageType_MsgAppend || m.MsgType == pb.MessageType_MsgHeartbeat {
 			r.becomeFollower(m.Term, m.From)
@@ -370,7 +363,6 @@ func (r *Raft) handleAppendEntries(m pb.Message) {
 
 // handleHeartbeat handle Heartbeat RPC request
 func (r *Raft) handleHeartbeat(m pb.Message) {
-	// Your Code Here (2A).
 	pbMsg := pb.Message{
 		MsgType: pb.MessageType_MsgHeartbeatResponse,
 		From:    r.id,
