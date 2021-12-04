@@ -197,8 +197,26 @@ func newRaft(c *Config) *Raft {
 // sendAppend sends an append RPC with new entries (if any) and the
 // current commit index to the given peer. Returns true if a message was sent.
 func (r *Raft) sendAppend(to uint64) bool {
-	// Your Code Here (2A).
-	return false
+	// TODO, Your Code Here (2A).
+	prevLogIndex := r.Prs[to].Next - 1
+	prevLogTerm, _ := r.RaftLog.Term(prevLogIndex)
+	entries := make([]*pb.Entry, 0)
+	n := len(r.RaftLog.entries)
+	for i := r.RaftLog.toSliceIndex(prevLogIndex + 1); i < n; i++ {
+		entries = append(entries, &r.RaftLog.entries[i])
+	}
+	pbMsg := pb.Message{
+		MsgType: pb.MessageType_MsgAppend,
+		To:      to,
+		From:    r.id,
+		Term:    r.Term,
+		Commit:  r.RaftLog.committed,
+		LogTerm: prevLogTerm,
+		Index:   prevLogIndex,
+		Entries: entries,
+	}
+	r.msgs = append(r.msgs, pbMsg)
+	return true
 }
 
 // sendHeartbeat sends a heartbeat RPC to the given peer.
@@ -358,7 +376,20 @@ func (r *Raft) Step(m pb.Message) error {
 
 // handleAppendEntries handle AppendEntries RPC request
 func (r *Raft) handleAppendEntries(m pb.Message) {
-	// Your Code Here (2A).
+	// TODO, Your Code Here (2A).
+	pbMsg := pb.Message{
+		MsgType: pb.MessageType_MsgAppendResponse,
+		From:    r.id,
+		To:      m.From,
+		Term:    r.Term,
+		Reject:  false,
+	}
+	if m.Term < r.Term {
+		pbMsg.Reject = true
+	}
+
+	r.msgs = append(r.msgs, pbMsg)
+
 }
 
 // handleHeartbeat handle Heartbeat RPC request
